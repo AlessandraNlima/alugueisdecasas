@@ -185,7 +185,7 @@ export default async function ImoveisPage({ searchParams }: PageProps<"/imoveis"
                       </td>
                       <td className={tdValor}>{brl(i.valor_aluguel)}</td>
                       <td className={`${td} font-mono tabular-nums`}>{i.dia_vencimento}</td>
-                      <td className={`${td} whitespace-nowrap capitalize`}>
+                      <td className={`${td} whitespace-nowrap first-letter:uppercase`}>
                         {nomeDoMes(i.inicio_contrato.slice(0, 7))}
                       </td>
                       <td className={td}>

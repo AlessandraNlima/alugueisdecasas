@@ -45,7 +45,7 @@ export function NavegarMes({ caminho, mes }: { caminho: string; mes: string }) {
       <Link href={`${caminho}?mes=${somarMeses(mes, -1)}`} className={seta} aria-label="Mês anterior">
         ◀
       </Link>
-      <span className="min-w-44 text-center text-lg font-semibold capitalize text-slate-900">
+      <span className="min-w-44 text-center text-lg inline-block font-semibold text-slate-900 first-letter:uppercase">
         {nomeDoMes(mes)}
       </span>
       <Link href={`${caminho}?mes=${somarMeses(mes, 1)}`} className={seta} aria-label="Próximo mês">

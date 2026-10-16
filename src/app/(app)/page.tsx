@@ -215,7 +215,7 @@ export default async function MesPage({ searchParams }: PageProps<"/">) {
                       </p>
                     </td>
                     <td className={td}>
-                      <Link href={`/?mes=${a.ym}`} className="capitalize text-emerald-700 hover:underline">
+                      <Link href={`/?mes=${a.ym}`} className="inline-block text-emerald-700 first-letter:uppercase hover:underline">
                         {nomeDoMes(a.ym)}
                       </Link>
                     </td>

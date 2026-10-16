@@ -83,7 +83,7 @@ export default async function RelatorioPage({ searchParams }: PageProps<"/relato
             <tbody className="divide-y divide-slate-100">
               {linhas.map((l) => (
                 <tr key={l.ym} className={l.ym === hoje.slice(0, 7) ? "bg-emerald-50" : undefined}>
-                  <td className={`${td} capitalize`}>
+                  <td className={`${td} first-letter:uppercase`}>
                     <Link href={`/?mes=${l.ym}`} className="hover:text-emerald-700 hover:underline">
                       {nomeCurtoDoMes(l.ym)}
                     </Link>
