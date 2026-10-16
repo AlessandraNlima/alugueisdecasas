@@ -89,7 +89,7 @@ export function BarraLateral({ email, nome }: { email: string; nome: string | nu
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-semibold text-slate-900">Minha conta</span>
-            <span className="block truncate text-xs text-slate-500">{email}</span>
+            <span className="block truncate text-xs text-slate-500">{nome || email}</span>
           </span>
           <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
         </Link>

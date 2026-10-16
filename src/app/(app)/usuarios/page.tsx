@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { randomInt } from "node:crypto";
 import { headers } from "next/headers";
 import { BotaoConfirmar } from "@/components/botao-confirmar";
@@ -105,6 +106,11 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/usuario
                         {u.last_sign_in_at ? dataBR(u.last_sign_in_at) : <span className="text-slate-400">nunca entrou</span>}
                       </td>
                       <td className={`${td} whitespace-nowrap text-right align-top`}>
+                        {eu && (
+                          <Link href="/minha-senha" className="text-xs font-medium text-blue-700 hover:underline">
+                            {nome ? "Editar meu nome" : "Adicionar meu nome"}
+                          </Link>
+                        )}
                         {!eu && (
                           <div className="flex flex-wrap items-start justify-end gap-1">
                             <FormRedefinirSenha
