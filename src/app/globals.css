@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* O sistema só tem tema claro: fixa as cores do body para o texto continuar
+   legível quando o navegador da pessoa está em modo escuro. */
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #f8faf9;
+  color: #0f172a;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
