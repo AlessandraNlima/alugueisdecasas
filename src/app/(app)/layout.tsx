@@ -31,7 +31,10 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             ))}
           </nav>
           <form action={signOut} className="flex items-center gap-3 text-sm text-slate-500">
-            <span className="hidden sm:inline">{user.email}</span>
+            <Link href="/minha-senha" className="hover:text-emerald-800 hover:underline" title="Trocar minha senha">
+              <span className="hidden sm:inline">{user.email}</span>
+              <span className="sm:hidden">Minha senha</span>
+            </Link>
             <button type="submit" className="rounded-md px-2 py-1 hover:bg-slate-100 hover:text-slate-900">
               Sair
             </button>
