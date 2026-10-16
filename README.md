@@ -32,15 +32,18 @@ Feito com Next.js + Supabase (banco e login), hospedado na Vercel.
    usuário (e-mail e senha). Marque **Auto Confirm User**.
 4. Em **Authentication → Sign In / Providers**, desligue **Allow new users to
    sign up**. Assim só quem você cadastrar consegue entrar.
-5. Em **Project Settings → API**, copie a **Project URL** e a chave **anon public**.
+5. Clique no botão **Connect** (topo da página) → **Framework** → **Next.js** e
+   copie as duas linhas da aba **.env.local**.
 
 ### 2. Vercel (hospedagem)
 
 1. Em [vercel.com](https://vercel.com), clique em **Add New → Project** e
    importe este repositório do GitHub.
-2. Antes de clicar em **Deploy**, abra **Environment Variables** e cadastre:
-   - `NEXT_PUBLIC_SUPABASE_URL` = a Project URL do Supabase
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = a chave anon public
+2. Antes de clicar em **Deploy**, abra **Environment Variables** e cole as duas
+   linhas copiadas do Supabase (a Vercel separa nome e valor sozinha):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (o nome antigo
+     `NEXT_PUBLIC_SUPABASE_ANON_KEY` também funciona)
 3. Clique em **Deploy**. Quando terminar, abra o endereço que a Vercel mostrar
    e entre com o e-mail e a senha criados no Supabase.
 
