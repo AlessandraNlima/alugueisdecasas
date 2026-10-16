@@ -1,5 +1,5 @@
 import { SubmitButton } from "@/components/submit-button";
-import { Mensagem, Painel, botaoPrincipal, campo, rotulo } from "@/components/ui";
+import { CabecalhoPagina, Mensagem, Painel, botaoPrincipal, campo, rotulo } from "@/components/ui";
 import { exigirUsuario } from "@/lib/dados";
 import { trocarSenha } from "./actions";
 
@@ -13,10 +13,14 @@ export default async function MinhaSenhaPage({ searchParams }: PageProps<"/minha
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-slate-900">Minha senha</h1>
+      <CabecalhoPagina
+        secao="Minha conta"
+        titulo="Minha conta"
+        subtitulo={user.email ?? undefined}
+      />
       <Mensagem ok={param(sp.ok)} erro={param(sp.erro)} />
 
-      <Painel titulo={`Trocar a senha de ${user.email}`}>
+      <Painel titulo="Trocar minha senha" className="max-w-xl">
         <p className="text-sm text-slate-600">
           Quem recebeu uma senha provisória deve trocá-la aqui no primeiro acesso.
         </p>

@@ -1,17 +1,22 @@
 import Link from "next/link";
+import { FileText, Trash2 } from "lucide-react";
 import { BotaoConfirmar } from "@/components/botao-confirmar";
 import { SubmitButton } from "@/components/submit-button";
 import {
+  CabecalhoPagina,
   Mensagem,
   NavegarMes,
   Painel,
   Vazio,
+  botaoPerigo,
   botaoPrincipal,
   campo,
   rotulo,
+  tabelaCaixa,
   td,
   tdValor,
   th,
+  thead,
 } from "@/components/ui";
 import {
   CATEGORIAS_DESPESA,
@@ -46,19 +51,25 @@ export default async function DespesasPage({ searchParams }: PageProps<"/despesa
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-slate-900">Despesas</h1>
-        <NavegarMes caminho="/despesas" mes={mes} />
-      </div>
+      <CabecalhoPagina
+        secao="Despesas"
+        titulo="Despesas"
+        subtitulo="IPTU, condomínio, consertos e tudo o que sai do bolso por imóvel."
+        acoes={<NavegarMes caminho="/despesas" mes={mes} />}
+      />
       <Mensagem ok={param(sp.ok)} erro={param(sp.erro)} />
 
       <Painel titulo="Lançar despesa">
         {imoveis.length === 0 ? (
-          <Vazio>
-            <Link href="/imoveis" className="font-medium text-emerald-700 underline">
-              Cadastre um imóvel
-            </Link>{" "}
-            antes de lançar despesas.
+          <Vazio
+            titulo="Nenhum imóvel cadastrado"
+            acao={
+              <Link href="/imoveis#novo" className={botaoPrincipal}>
+                Cadastrar imóvel
+              </Link>
+            }
+          >
+            Cadastre um imóvel antes de lançar despesas.
           </Vazio>
         ) : (
           <form action={lancarDespesa} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -108,39 +119,57 @@ export default async function DespesasPage({ searchParams }: PageProps<"/despesa
 
       <Painel
         titulo={`Despesas de ${nomeDoMes(mes)}`}
-        acao={<span className="font-mono font-semibold tabular-nums">{brl(total)}</span>}
+        subtitulo={despesas.length ? `${despesas.length} lançamento${despesas.length === 1 ? "" : "s"}` : undefined}
+        acao={
+          <span className="rounded-full bg-red-50 px-3 py-1 text-sm font-bold text-red-700 tabular-nums">
+            {brl(total)}
+          </span>
+        }
       >
         {despesas.length === 0 ? (
-          <Vazio>Nenhuma despesa lançada neste mês.</Vazio>
+          <Vazio
+            ilustracao={
+              <span className="grid h-16 w-16 place-items-center rounded-2xl bg-red-50">
+                <FileText className="h-8 w-8 text-red-400" aria-hidden />
+              </span>
+            }
+            titulo="Nenhuma despesa neste mês"
+          >
+            As despesas lançadas aparecem aqui. Use as setas do seletor para ver outros meses.
+          </Vazio>
         ) : (
-          <div className="overflow-x-auto">
+          <div className={tabelaCaixa}>
             <table className="w-full text-sm">
-              <thead className="border-b border-slate-200">
+              <thead className={thead}>
                 <tr>
                   <th className={th}>Data</th>
                   <th className={th}>Imóvel</th>
                   <th className={th}>Tipo</th>
                   <th className={th}>Descrição</th>
                   <th className={`${th} text-right`}>Valor</th>
-                  <th className={th} />
+                  <th className={th}>
+                    <span className="sr-only">Ações</span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {despesas.map((d) => (
                   <tr key={d.id}>
-                    <td className={`${td} font-mono tabular-nums`}>{dataBR(d.data)}</td>
-                    <td className={td}>{nomes.get(d.imovel_id) ?? "—"}</td>
-                    <td className={td}>{d.categoria}</td>
-                    <td className={td}>{d.descricao}</td>
-                    <td className={tdValor}>{brl(d.valor)}</td>
+                    <td className={`${td} whitespace-nowrap tabular-nums`}>{dataBR(d.data)}</td>
+                    <td className={`${td} font-medium text-slate-900`}>{nomes.get(d.imovel_id) ?? "—"}</td>
+                    <td className={td}>
+                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                        {d.categoria}
+                      </span>
+                    </td>
+                    <td className={`${td} text-slate-600`}>{d.descricao}</td>
+                    <td className={`${tdValor} font-semibold text-red-700`}>{brl(d.valor)}</td>
                     <td className={`${td} text-right`}>
                       <form action={excluirDespesa}>
                         <input type="hidden" name="id" value={d.id} />
                         <input type="hidden" name="voltar" value={voltar} />
-                        <BotaoConfirmar
-                          confirmar="Confirmar?"
-                          className="rounded px-2 py-1 text-xs text-slate-500 hover:bg-red-50 hover:text-red-700"
-                        >
+                        <BotaoConfirmar confirmar="Confirmar?" className={botaoPerigo}>
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden />
                           Excluir
                         </BotaoConfirmar>
                       </form>

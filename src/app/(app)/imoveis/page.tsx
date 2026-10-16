@@ -1,18 +1,25 @@
 import Link from "next/link";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { BotaoConfirmar } from "@/components/botao-confirmar";
 import { SubmitButton } from "@/components/submit-button";
 import {
+  CabecalhoPagina,
   Etiqueta,
+  IlustracaoCasa,
   Mensagem,
   Painel,
   Vazio,
+  botaoDiscreto,
+  botaoPerigo,
   botaoPrincipal,
   botaoSecundario,
   campo,
   rotulo,
+  tabelaCaixa,
   td,
   tdValor,
   th,
+  thead,
 } from "@/components/ui";
 import { brl, mesAtual, nomeDoMes, valorParaCampo } from "@/lib/alugueis";
 import { buscarImoveis, exigirUsuario } from "@/lib/dados";
@@ -27,13 +34,28 @@ export default async function ImoveisPage({ searchParams }: PageProps<"/imoveis"
   const { supabase } = await exigirUsuario();
   const imoveis = await buscarImoveis(supabase);
   const editando = imoveis.find((i) => i.id === param(sp.editar));
+  const alugados = imoveis.filter((i) => i.ativo).length;
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-slate-900">Imóveis</h1>
+      <CabecalhoPagina
+        secao="Imóveis"
+        titulo="Imóveis"
+        subtitulo="Cadastre seus imóveis, o valor do aluguel e os dados de cada inquilino."
+        acoes={
+          <a href="/imoveis#novo" className={`${botaoPrincipal} px-5 py-3 text-base`}>
+            <Plus className="h-5 w-5" aria-hidden />
+            Cadastrar imóvel
+          </a>
+        }
+      />
       <Mensagem ok={param(sp.ok)} erro={param(sp.erro)} />
 
-      <Painel titulo={editando ? `Editar: ${editando.apelido}` : "Cadastrar imóvel"}>
+      <Painel
+        id="novo"
+        titulo={editando ? `Editar: ${editando.apelido}` : "Cadastrar imóvel"}
+        subtitulo="Campos com * são obrigatórios."
+      >
         {/* key: troca de imóvel em edição precisa remontar o form, senão os
             defaultValue continuam com os dados do anterior. */}
         <form
@@ -152,14 +174,23 @@ export default async function ImoveisPage({ searchParams }: PageProps<"/imoveis"
         </form>
       </Painel>
 
-      <Painel titulo="Imóveis cadastrados">
+      <Painel
+        titulo="Imóveis cadastrados"
+        subtitulo={
+          imoveis.length
+            ? `${imoveis.length} no total · ${alugados} alugado${alugados === 1 ? "" : "s"}`
+            : undefined
+        }
+      >
         {imoveis.length === 0 ? (
-          <Vazio>Nenhum imóvel ainda. Preencha o formulário acima para cadastrar o primeiro.</Vazio>
+          <Vazio ilustracao={<IlustracaoCasa />} titulo="Nenhum imóvel ainda">
+            Preencha o formulário acima para cadastrar o primeiro.
+          </Vazio>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className={tabelaCaixa}>
               <table className="w-full text-sm">
-                <thead className="border-b border-slate-200">
+                <thead className={thead}>
                   <tr>
                     <th className={th}>Imóvel</th>
                     <th className={th}>Inquilino</th>
@@ -167,24 +198,26 @@ export default async function ImoveisPage({ searchParams }: PageProps<"/imoveis"
                     <th className={th}>Vence dia</th>
                     <th className={th}>Desde</th>
                     <th className={th}>Situação</th>
-                    <th className={th} />
+                    <th className={th}>
+                      <span className="sr-only">Ações</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {imoveis.map((i) => (
-                    <tr key={i.id}>
+                    <tr key={i.id} className={i.id === editando?.id ? "bg-blue-50/50" : undefined}>
                       <td className={td}>
-                        <p className="font-medium text-slate-900">{i.apelido}</p>
+                        <p className="font-semibold text-slate-900">{i.apelido}</p>
                         <p className="text-xs text-slate-500">{i.endereco}</p>
                       </td>
                       <td className={td}>
-                        <p>{i.inquilino_nome ?? "—"}</p>
+                        <p className="text-slate-800">{i.inquilino_nome ?? "—"}</p>
                         <p className="text-xs text-slate-500">
                           {[i.inquilino_telefone, i.inquilino_cpf].filter(Boolean).join(" · ")}
                         </p>
                       </td>
-                      <td className={tdValor}>{brl(i.valor_aluguel)}</td>
-                      <td className={`${td} font-mono tabular-nums`}>{i.dia_vencimento}</td>
+                      <td className={`${tdValor} font-semibold text-slate-900`}>{brl(i.valor_aluguel)}</td>
+                      <td className={`${td} tabular-nums`}>{i.dia_vencimento}</td>
                       <td className={`${td} whitespace-nowrap first-letter:uppercase`}>
                         {nomeDoMes(i.inicio_contrato.slice(0, 7))}
                       </td>
@@ -192,21 +225,19 @@ export default async function ImoveisPage({ searchParams }: PageProps<"/imoveis"
                         <Etiqueta tipo={i.ativo ? "pago" : "fora"}>{i.ativo ? "Alugado" : "Desocupado"}</Etiqueta>
                       </td>
                       <td className={`${td} whitespace-nowrap text-right`}>
-                        <Link
-                          href={`/imoveis?editar=${i.id}`}
-                          className="rounded px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
-                        >
-                          Editar
-                        </Link>
-                        <form action={excluirImovel} className="inline">
-                          <input type="hidden" name="id" value={i.id} />
-                          <BotaoConfirmar
-                            confirmar="Apagar tudo?"
-                            className="rounded px-2 py-1 text-xs text-slate-500 hover:bg-red-50 hover:text-red-700"
-                          >
-                            Excluir
-                          </BotaoConfirmar>
-                        </form>
+                        <div className="inline-flex items-center gap-1">
+                          <Link href={`/imoveis?editar=${i.id}#novo`} className={botaoDiscreto}>
+                            <Pencil className="h-3.5 w-3.5" aria-hidden />
+                            Editar
+                          </Link>
+                          <form action={excluirImovel}>
+                            <input type="hidden" name="id" value={i.id} />
+                            <BotaoConfirmar confirmar="Apagar tudo?" className={botaoPerigo}>
+                              <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                              Excluir
+                            </BotaoConfirmar>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -214,8 +245,8 @@ export default async function ImoveisPage({ searchParams }: PageProps<"/imoveis"
               </table>
             </div>
             <p className="text-xs text-slate-500">
-              Excluir um imóvel apaga também os pagamentos e despesas dele. Para guardar o histórico,
-              edite e marque como <b>Desocupado</b>.
+              Excluir um imóvel apaga também os pagamentos e despesas dele. Para guardar o histórico, edite e marque
+              como <b>Desocupado</b>.
             </p>
           </>
         )}

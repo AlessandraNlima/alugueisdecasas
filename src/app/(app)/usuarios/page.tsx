@@ -1,7 +1,8 @@
 import { randomInt } from "node:crypto";
 import { headers } from "next/headers";
 import { BotaoConfirmar } from "@/components/botao-confirmar";
-import { Mensagem, Painel, Vazio, td, th } from "@/components/ui";
+import { CabecalhoPagina, Mensagem, Painel, Vazio, botaoPerigo, tabelaCaixa, td, th, thead } from "@/components/ui";
+import { UserMinus } from "lucide-react";
 import { dataBR } from "@/lib/alugueis";
 import { exigirUsuario } from "@/lib/dados";
 import { chaveSecretaConfigurada, createAdminClient } from "@/lib/supabase/admin";
@@ -26,12 +27,16 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/usuario
   if (!chaveSecretaConfigurada()) {
     return (
       <>
-        <h1 className="text-2xl font-bold text-slate-900">Usuários</h1>
+        <CabecalhoPagina
+          secao="Usuários"
+          titulo="Usuários"
+          subtitulo="Quem pode entrar no sistema e administrar os aluguéis."
+        />
         <Painel titulo="Falta uma configuração">
           <p className="text-sm text-slate-700">
             Para cadastrar e remover pessoas por aqui, o sistema precisa da chave secreta do
             Supabase. Peça para quem configurou o sistema cadastrar na Vercel a variável{" "}
-            <code className="rounded bg-slate-100 px-1">SUPABASE_SECRET_KEY</code> (Supabase →
+            <code className="rounded bg-slate-100 px-1.5 py-0.5">SUPABASE_SECRET_KEY</code> (Supabase →
             Project Settings → API Keys → Secret key) e publicar de novo.
           </p>
         </Painel>
@@ -49,7 +54,11 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/usuario
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-slate-900">Usuários</h1>
+      <CabecalhoPagina
+        secao="Usuários"
+        titulo="Usuários"
+        subtitulo="Quem pode entrar no sistema e administrar os aluguéis."
+      />
       <Mensagem ok={param(sp.ok)} erro={param(sp.erro) ?? (error ? `Erro ao listar: ${error.message}` : undefined)} />
       {novo && <MensagemDeAcesso key={novo} email={novo} site={site} />}
 
@@ -66,14 +75,16 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/usuario
         {usuarios.length === 0 ? (
           <Vazio>Nenhum usuário.</Vazio>
         ) : (
-          <div className="overflow-x-auto">
+          <div className={tabelaCaixa}>
             <table className="w-full text-sm">
-              <thead className="border-b border-slate-200">
+              <thead className={thead}>
                 <tr>
                   <th className={th}>Pessoa</th>
                   <th className={th}>Desde</th>
                   <th className={th}>Último acesso</th>
-                  <th className={th} />
+                  <th className={th}>
+                    <span className="sr-only">Ações</span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -83,14 +94,14 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/usuario
                   return (
                     <tr key={u.id}>
                       <td className={td}>
-                        <p className="font-medium text-slate-900">
+                        <p className="font-semibold text-slate-900">
                           {nome ?? u.email}
-                          {eu && <span className="ml-2 text-xs font-normal text-emerald-700">(você)</span>}
+                          {eu && <span className="ml-2 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">você</span>}
                         </p>
                         {nome && <p className="text-xs text-slate-500">{u.email}</p>}
                       </td>
-                      <td className={`${td} whitespace-nowrap font-mono tabular-nums`}>{dataBR(u.created_at)}</td>
-                      <td className={`${td} whitespace-nowrap font-mono tabular-nums`}>
+                      <td className={`${td} whitespace-nowrap tabular-nums`}>{dataBR(u.created_at)}</td>
+                      <td className={`${td} whitespace-nowrap tabular-nums`}>
                         {u.last_sign_in_at ? dataBR(u.last_sign_in_at) : <span className="text-slate-400">nunca entrou</span>}
                       </td>
                       <td className={`${td} whitespace-nowrap text-right align-top`}>
@@ -107,8 +118,9 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/usuario
                               <input type="hidden" name="email" value={u.email ?? ""} />
                               <BotaoConfirmar
                                 confirmar="Remover acesso?"
-                                className="rounded px-2 py-1 text-xs text-slate-500 hover:bg-red-50 hover:text-red-700"
+                                className={botaoPerigo}
                               >
+                                <UserMinus className="h-3.5 w-3.5" aria-hidden />
                                 Remover
                               </BotaoConfirmar>
                             </form>

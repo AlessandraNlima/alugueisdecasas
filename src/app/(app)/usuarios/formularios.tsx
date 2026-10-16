@@ -73,7 +73,7 @@ export function FormRedefinirSenha({
 }) {
   return (
     <details className="inline-block text-left">
-      <summary className="cursor-pointer list-none rounded px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50">
+      <summary className="cursor-pointer list-none rounded-md px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50">
         Nova senha
       </summary>
       <form
@@ -124,7 +124,7 @@ export function MensagemDeAcesso({ email, site }: { email: string; site: string 
   ].join("\n");
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+    <div className="flex flex-col gap-2 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
       <p className="text-sm font-semibold text-slate-900">Mensagem pronta para enviar à pessoa</p>
       <CopiarTexto texto={texto} />
     </div>

@@ -8,7 +8,7 @@ export function CopiarTexto({ texto }: { texto: string }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <pre className="whitespace-pre-wrap rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
+      <pre className="whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-800">
         {texto}
       </pre>
       <button
@@ -22,7 +22,7 @@ export function CopiarTexto({ texto }: { texto: string }) {
             setCopiado(false);
           }
         }}
-        className="self-start rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        className="self-start rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
       >
         {copiado ? "Copiado!" : "Copiar mensagem"}
       </button>
