@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/imoveis", label: "Imóveis" },
   { href: "/despesas", label: "Despesas" },
   { href: "/relatorio", label: "Relatório" },
+  { href: "/usuarios", label: "Usuários" },
 ];
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {

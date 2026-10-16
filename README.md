@@ -18,6 +18,8 @@ Feito com Next.js + Supabase (banco e login), hospedado na Vercel.
 - **Despesas**: lançamento por imóvel e por mês.
 - **Relatório**: os 12 meses do ano, o resultado de cada imóvel e o botão
   **Baixar planilha (CSV)**.
+- **Usuários**: dar acesso a uma pessoa (com senha provisória e mensagem
+  pronta para enviar), gerar nova senha para quem esqueceu e remover acesso.
 - **Minha senha** (clique no seu e-mail no topo): cada pessoa troca a própria
   senha.
 
@@ -50,6 +52,9 @@ Todas as pessoas cadastradas no Supabase veem e administram os mesmos dados.
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (o nome antigo
      `NEXT_PUBLIC_SUPABASE_ANON_KEY` também funciona)
+   - `SUPABASE_SECRET_KEY` = Supabase → **Project Settings → API Keys →
+     Secret keys** (começa com `sb_secret_`). Só é usada pela tela
+     **Usuários**. É secreta: nunca coloque o prefixo `NEXT_PUBLIC_` nela.
 3. Clique em **Deploy**. Quando terminar, abra o endereço que a Vercel mostrar
    e entre com o e-mail e a senha criados no Supabase.
 
@@ -58,14 +63,14 @@ a nova versão sozinha.
 
 ## Dar acesso a outra pessoa
 
-1. Supabase → **Authentication → Users → Add user → Create new user**.
-2. E-mail da pessoa, uma senha provisória e **Auto Confirm User** marcado.
-3. Envie para a pessoa o endereço do sistema, o e-mail e a senha provisória.
-4. No primeiro acesso, ela clica no próprio e-mail no topo da tela
-   (**Minha senha**) e cria uma senha só dela.
+Pela tela **Usuários** do sistema: preencha nome, e-mail e senha provisória,
+clique em **Dar acesso** e copie a mensagem pronta para enviar. No primeiro
+acesso, a pessoa clica no próprio e-mail no topo da tela (**Minha senha**) e
+cria uma senha só dela.
 
-Para tirar o acesso: **Authentication → Users**, clique na pessoa →
-**Delete user**. Os lançamentos que ela fez continuam no sistema.
+Sem a `SUPABASE_SECRET_KEY` configurada, faça pelo Supabase:
+**Authentication → Users → Add user → Create new user** (com **Auto Confirm
+User** marcado).
 
 ## Rodar no computador (opcional)
 
