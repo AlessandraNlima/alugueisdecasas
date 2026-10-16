@@ -8,6 +8,7 @@ import {
   Building2,
   ChartColumn,
   ChevronRight,
+  DatabaseBackup,
   FileText,
   HandCoins,
   House,
@@ -25,6 +26,7 @@ const LINKS: { href: string; label: string; icone: LucideIcon }[] = [
   { href: "/lucro", label: "Lucro dos sócios", icone: HandCoins },
   { href: "/relatorio", label: "Relatórios", icone: ChartColumn },
   { href: "/usuarios", label: "Usuários", icone: Users },
+  { href: "/backup", label: "Backup", icone: DatabaseBackup },
 ];
 
 function Logo() {

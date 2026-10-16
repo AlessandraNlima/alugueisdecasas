@@ -22,6 +22,9 @@ Feito com Next.js + Supabase (banco e login), hospedado na Vercel.
   **Baixar planilha (CSV)**.
 - **Usuários**: dar acesso a uma pessoa (com senha provisória e mensagem
   pronta para enviar), gerar nova senha para quem esqueceu e remover acesso.
+- **Backup**: baixa um arquivo com todos os dados (para guardar no Google
+  Drive) e restaura a partir dele. Nada fica guardado na Vercel nem no
+  Supabase, então não gera custo.
 - **Minha senha** (clique no seu e-mail no topo): cada pessoa troca a própria
   senha.
 
