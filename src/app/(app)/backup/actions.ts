@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { lerArquivoBackup, somenteColunas, type Linha } from "@/lib/backup";
 import { buscarSocios, exigirUsuario } from "@/lib/dados";
+import { enviarBackupPorEmail } from "@/lib/backup-servidor";
 
 const LIMITE_BYTES = 4 * 1024 * 1024;
 
@@ -61,4 +62,17 @@ export async function restaurarBackup(formData: FormData) {
     "ok",
     `Backup de ${data} restaurado: ${imoveis.length} imóveis, ${pagamentos.length} pagamentos e ${despesas.length} despesas.`,
   );
+}
+
+// Mesmo envio da rotina semanal, disparado na hora por um sócio (serve para
+// testar a configuração do Gmail). Lê os dados com o login de quem clicou.
+export async function enviarBackupAgora() {
+  const { supabase, user } = await exigirUsuario();
+  let r;
+  try {
+    r = await enviarBackupPorEmail(supabase, user.email ?? user.id, `enviado por ${user.email} pelo sistema`);
+  } catch (e) {
+    voltar("erro", e instanceof Error ? `Não foi possível enviar: ${e.message}` : "Não foi possível enviar o e-mail.");
+  }
+  voltar("ok", `Backup enviado por e-mail para ${r.para.join(", ")}.`);
 }

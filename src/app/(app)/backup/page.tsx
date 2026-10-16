@@ -1,8 +1,10 @@
-import { ArchiveRestore, CloudDownload, ShieldCheck } from "lucide-react";
+import { ArchiveRestore, CircleCheck, CloudDownload, Mail, ShieldCheck, TriangleAlert } from "lucide-react";
+import { SubmitButton } from "@/components/submit-button";
+import { destinatariosBackup, emailConfigurado } from "@/lib/backup-servidor";
 import { BotaoConfirmar } from "@/components/botao-confirmar";
-import { CabecalhoPagina, Mensagem, Painel, botaoPrincipal, campo } from "@/components/ui";
+import { CabecalhoPagina, Mensagem, Painel, botaoPrincipal, botaoSecundario, campo } from "@/components/ui";
 import { exigirUsuario } from "@/lib/dados";
-import { restaurarBackup } from "./actions";
+import { enviarBackupAgora, restaurarBackup } from "./actions";
 
 function param(v: string | string[] | undefined) {
   return typeof v === "string" ? v : undefined;
@@ -16,7 +18,14 @@ export default async function BackupPage({ searchParams }: PageProps<"/backup">)
     const { count } = await supabase.from(tabela).select("*", { count: "exact", head: true });
     return count ?? 0;
   };
-  const [imoveis, pagamentos, despesas] = await Promise.all([contar("imoveis"), contar("pagamentos"), contar("despesas")]);
+  const [imoveis, pagamentos, despesas, para] = await Promise.all([
+    contar("imoveis"),
+    contar("pagamentos"),
+    contar("despesas"),
+    destinatariosBackup(),
+  ]);
+  const temEmail = emailConfigurado();
+  const temAgenda = Boolean(process.env.CRON_SECRET);
 
   return (
     <>
@@ -81,6 +90,56 @@ export default async function BackupPage({ searchParams }: PageProps<"/backup">)
         </Painel>
       </div>
 
+      <Painel
+        titulo="Backup automático por e-mail"
+        subtitulo="Toda segunda-feira de manhã o sistema manda o arquivo de backup por e-mail, sozinho."
+        acao={
+          temEmail && temAgenda ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+              <CircleCheck className="h-3.5 w-3.5" aria-hidden /> Ligado
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+              <TriangleAlert className="h-3.5 w-3.5" aria-hidden /> Falta configurar
+            </span>
+          )
+        }
+      >
+        <div className="flex items-start gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600">
+            <Mail className="h-6 w-6" aria-hidden />
+          </span>
+          <div className="flex min-w-0 flex-col gap-1 text-sm text-slate-700">
+            <p>
+              <b>Quem recebe:</b> {para.length ? para.join(", ") : "ninguém ainda"}
+            </p>
+            <p>
+              <b>Quando:</b> toda segunda-feira, por volta das 8h (horário de Brasília).
+            </p>
+            {!temEmail && (
+              <p className="text-amber-700">
+                Para ligar, cadastre na Vercel as variáveis <code>GMAIL_USER</code> e <code>GMAIL_APP_PASSWORD</code> (senha
+                de app do Gmail).
+              </p>
+            )}
+            {temEmail && !temAgenda && (
+              <p className="text-amber-700">
+                O e-mail já funciona pelo botão abaixo. Para o envio semanal automático, cadastre na Vercel a variável{" "}
+                <code>CRON_SECRET</code>.
+              </p>
+            )}
+          </div>
+        </div>
+        {temEmail && (
+          <form action={enviarBackupAgora}>
+            <SubmitButton pendingText="Enviando..." className={botaoSecundario}>
+              <Mail className="h-4 w-4 text-blue-600" aria-hidden />
+              Enviar backup por e-mail agora
+            </SubmitButton>
+          </form>
+        )}
+      </Painel>
+
       <Painel titulo="Como manter o backup em dia (sem custo)">
         <div className="flex items-start gap-4">
           <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
@@ -88,7 +147,8 @@ export default async function BackupPage({ searchParams }: PageProps<"/backup">)
           </span>
           <ol className="list-decimal space-y-1.5 pl-5 text-sm text-slate-700">
             <li>
-              Uma vez por semana (ou depois de lançar os pagamentos do mês), clique em <b>Baixar backup agora</b>.
+              Toda segunda o backup chega por e-mail. Se o envio automático não estiver ligado, clique em{" "}
+              <b>Baixar backup agora</b> uma vez por semana.
             </li>
             <li>
               Guarde o arquivo numa pasta do Google Drive compartilhada entre os sócios. Assim a cópia não depende do

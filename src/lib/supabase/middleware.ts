@@ -2,7 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { SUPABASE_KEY, SUPABASE_URL } from "./config";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login"];
+// /api/cron: chamado pela Vercel Cron, sem login; a rota confere o CRON_SECRET.
+const PUBLIC_PATHS = ["/login", "/api/cron"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });

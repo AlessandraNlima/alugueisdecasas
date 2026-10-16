@@ -66,6 +66,23 @@ Todas as pessoas cadastradas no Supabase veem e administram os mesmos dados.
 Toda vez que algo for enviado para a branch `main` no GitHub, a Vercel publica
 a nova versão sozinha.
 
+## Backup automático por e-mail (opcional, gratuito)
+
+Toda segunda-feira por volta das 8h (Vercel Cron, ver `vercel.json`) o sistema
+manda o arquivo de backup por e-mail para todos os sócios. Variáveis na Vercel:
+
+- `GMAIL_USER`: o Gmail que envia (ex.: `fulano@gmail.com`).
+- `GMAIL_APP_PASSWORD`: senha de app desse Gmail (myaccount.google.com →
+  Segurança → Verificação em duas etapas ligada → Senhas de app). Não é a
+  senha normal da conta.
+- `CRON_SECRET`: qualquer sequência longa e aleatória; protege a rotina
+  automática (a Vercel envia esse valor sozinha).
+- `BACKUP_EMAIL_PARA` (opcional): e-mails separados por vírgula. Sem ela, vai
+  para todos que têm acesso ao sistema.
+
+Depois de cadastrar, faça Redeploy e teste em **Backup → Enviar backup por
+e-mail agora**.
+
 ## Dar acesso a outra pessoa
 
 Pela tela **Usuários** do sistema: preencha nome, e-mail e senha provisória,
