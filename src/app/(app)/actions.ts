@@ -73,7 +73,7 @@ export async function excluirImovel(formData: FormData) {
 }
 
 export async function registrarPagamento(formData: FormData) {
-  const { supabase } = await exigirUsuario();
+  const { supabase, user } = await exigirUsuario();
   const voltar = caminhoSeguro(formData.get("voltar"));
   const imovelId = texto(formData, "imovel_id");
   const mes = mesValido(texto(formData, "mes"));
@@ -92,6 +92,7 @@ export async function registrarPagamento(formData: FormData) {
       valor,
       data_pagamento: data,
       observacao: texto(formData, "observacao"),
+      owner_id: user.id,
     },
     { onConflict: "imovel_id,competencia" },
   );

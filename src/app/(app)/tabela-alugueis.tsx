@@ -14,7 +14,7 @@ export type LinhaAluguel = {
   vencimento: string; // AAAA-MM-DD
   valor: number;
   situacao: "pago" | "aberto" | "atrasado";
-  pagamento: { id: string; valor: number; data: string; observacao: string | null } | null;
+  pagamento: { id: string; valor: number; data: string; observacao: string | null; registradoPor: string | null } | null;
   dataSugerida: string;
 };
 
@@ -147,6 +147,9 @@ export function TabelaAlugueis({
                           <span className="whitespace-nowrap @[40rem]:block @[40rem]:text-xs">
                             em {dataBR(l.pagamento.data)}
                           </span>
+                          {l.pagamento.registradoPor && (
+                            <span className="block text-xs text-slate-400">por {l.pagamento.registradoPor}</span>
+                          )}
                         </span>
                         <span className="flex items-center gap-1">
                           <button type="button" onClick={() => setAberto(aberto === l.id ? null : l.id)} className={botaoDiscreto}>

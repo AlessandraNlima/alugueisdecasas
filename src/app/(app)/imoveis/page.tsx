@@ -21,8 +21,8 @@ import {
   th,
   thead,
 } from "@/components/ui";
-import { brl, mesAtual, nomeDoMes, valorParaCampo } from "@/lib/alugueis";
-import { buscarImoveis, exigirUsuario } from "@/lib/dados";
+import { brl, dataBR, mesAtual, nomeDoMes, valorParaCampo } from "@/lib/alugueis";
+import { buscarImoveis, buscarNomesUsuarios, exigirUsuario } from "@/lib/dados";
 import { excluirImovel, salvarImovel } from "../actions";
 
 function param(v: string | string[] | undefined) {
@@ -32,7 +32,7 @@ function param(v: string | string[] | undefined) {
 export default async function ImoveisPage({ searchParams }: PageProps<"/imoveis">) {
   const sp = await searchParams;
   const { supabase } = await exigirUsuario();
-  const imoveis = await buscarImoveis(supabase);
+  const [imoveis, nomes] = await Promise.all([buscarImoveis(supabase), buscarNomesUsuarios()]);
   const editando = imoveis.find((i) => i.id === param(sp.editar));
   const alugados = imoveis.filter((i) => i.ativo).length;
 
@@ -209,6 +209,12 @@ export default async function ImoveisPage({ searchParams }: PageProps<"/imoveis"
                       <td className={td}>
                         <p className="font-semibold text-slate-900">{i.apelido}</p>
                         <p className="text-xs text-slate-500">{i.endereco}</p>
+                        {i.owner_id && nomes[i.owner_id] && (
+                          <p className="text-xs text-slate-400">
+                            Cadastrado por {nomes[i.owner_id]}
+                            {i.criado_em ? ` em ${dataBR(i.criado_em)}` : ""}
+                          </p>
+                        )}
                       </td>
                       <td className={td}>
                         <p className="text-slate-800">{i.inquilino_nome ?? "—"}</p>

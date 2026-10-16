@@ -13,6 +13,8 @@ export type Imovel = {
   inquilino_cpf: string | null;
   ativo: boolean;
   observacoes: string | null;
+  owner_id?: string; // quem cadastrou
+  criado_em?: string;
 };
 
 export type Pagamento = {
@@ -22,6 +24,8 @@ export type Pagamento = {
   valor: number;
   data_pagamento: string;
   observacao: string | null;
+  owner_id?: string; // quem registrou (o último a salvar)
+  criado_em?: string;
 };
 
 export type Despesa = {
@@ -31,6 +35,8 @@ export type Despesa = {
   categoria: string;
   descricao: string | null;
   valor: number;
+  owner_id?: string; // quem lançou
+  criado_em?: string;
 };
 
 export const CATEGORIAS_DESPESA = [

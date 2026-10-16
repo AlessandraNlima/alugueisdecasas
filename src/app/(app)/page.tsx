@@ -25,7 +25,7 @@ import {
   situacaoNoMes,
   vencimento,
 } from "@/lib/alugueis";
-import { buscarDespesas, buscarImoveis, buscarPagamentos, exigirUsuario } from "@/lib/dados";
+import { buscarDespesas, buscarImoveis, buscarNomesUsuarios, buscarPagamentos, exigirUsuario } from "@/lib/dados";
 import { desfazerPagamento, registrarPagamento } from "./actions";
 import { TabelaAlugueis, type LinhaAluguel } from "./tabela-alugueis";
 
@@ -44,12 +44,13 @@ export default async function VisaoGeralPage({ searchParams }: PageProps<"/">) {
   const voltar = `/?mes=${mes}`;
 
   const { supabase } = await exigirUsuario();
-  const [imoveis, todosPagamentos, despesas] = await Promise.all([
+  const [imoveis, todosPagamentos, despesas, nomes] = await Promise.all([
     buscarImoveis(supabase),
     // Todos os pagamentos: as pendências olham todos os meses desde o
     // início de cada contrato, não só o mês aberto na tela.
     buscarPagamentos(supabase),
     buscarDespesas(supabase, { de: `${mes}-01`, ate: vencimento(mes, 31) }),
+    buscarNomesUsuarios(),
   ]);
   const pagamentos = indexarPagamentos(todosPagamentos);
   const resumo = resumoDoMes(mes, imoveis, pagamentos, despesas, hoje);
@@ -76,6 +77,7 @@ export default async function VisaoGeralPage({ searchParams }: PageProps<"/">) {
               valor: Number(s.pagamento.valor),
               data: s.pagamento.data_pagamento,
               observacao: s.pagamento.observacao,
+              registradoPor: s.pagamento.owner_id ? (nomes[s.pagamento.owner_id] ?? null) : null,
             }
           : null,
       dataSugerida: mes === hoje.slice(0, 7) ? hoje : vence,

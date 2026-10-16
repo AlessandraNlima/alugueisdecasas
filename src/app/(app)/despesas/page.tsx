@@ -28,7 +28,7 @@ import {
   nomeDoMes,
   vencimento,
 } from "@/lib/alugueis";
-import { buscarDespesas, buscarImoveis, exigirUsuario } from "@/lib/dados";
+import { buscarDespesas, buscarImoveis, buscarNomesUsuarios, exigirUsuario } from "@/lib/dados";
 import { excluirDespesa, lancarDespesa } from "../actions";
 
 function param(v: string | string[] | undefined) {
@@ -42,9 +42,10 @@ export default async function DespesasPage({ searchParams }: PageProps<"/despesa
   const voltar = `/despesas?mes=${mes}`;
 
   const { supabase } = await exigirUsuario();
-  const [imoveis, despesas] = await Promise.all([
+  const [imoveis, despesas, autores] = await Promise.all([
     buscarImoveis(supabase),
     buscarDespesas(supabase, { de: `${mes}-01`, ate: vencimento(mes, 31) }),
+    buscarNomesUsuarios(),
   ]);
   const nomes = new Map(imoveis.map((i) => [i.id, i.apelido]));
   const total = despesas.reduce((s, d) => s + Number(d.valor), 0);
@@ -146,6 +147,7 @@ export default async function DespesasPage({ searchParams }: PageProps<"/despesa
                   <th className={th}>Imóvel</th>
                   <th className={th}>Tipo</th>
                   <th className={th}>Descrição</th>
+                  <th className={th}>Lançado por</th>
                   <th className={`${th} text-right`}>Valor</th>
                   <th className={th}>
                     <span className="sr-only">Ações</span>
@@ -163,6 +165,9 @@ export default async function DespesasPage({ searchParams }: PageProps<"/despesa
                       </span>
                     </td>
                     <td className={`${td} text-slate-600`}>{d.descricao}</td>
+                    <td className={`${td} whitespace-nowrap text-slate-600`}>
+                      {(d.owner_id && autores[d.owner_id]) || "—"}
+                    </td>
                     <td className={`${tdValor} font-semibold text-red-700`}>{brl(d.valor)}</td>
                     <td className={`${td} text-right`}>
                       <form action={excluirDespesa}>

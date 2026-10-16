@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { chaveSecretaConfigurada, createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Despesa, Imovel, Pagamento } from "@/lib/alugueis";
 
@@ -30,7 +31,7 @@ export async function buscarPagamentos(
 ): Promise<Pagamento[]> {
   let q = supabase
     .from("pagamentos")
-    .select("id, imovel_id, competencia, valor, data_pagamento, observacao");
+    .select("id, imovel_id, competencia, valor, data_pagamento, observacao, owner_id, criado_em");
   if (filtro) q = q.gte("competencia", filtro.de).lte("competencia", filtro.ate);
   const { data, error } = await q.order("competencia", { ascending: true });
   if (error) throw new Error(`Erro ao carregar pagamentos: ${error.message}`);
@@ -43,10 +44,28 @@ export async function buscarDespesas(
 ): Promise<Despesa[]> {
   const { data, error } = await supabase
     .from("despesas")
-    .select("id, imovel_id, data, categoria, descricao, valor")
+    .select("id, imovel_id, data, categoria, descricao, valor, owner_id, criado_em")
     .gte("data", filtro.de)
     .lte("data", filtro.ate)
     .order("data", { ascending: false });
   if (error) throw new Error(`Erro ao carregar despesas: ${error.message}`);
   return (data ?? []) as Despesa[];
+}
+
+// Nome de cada sócio (Minha conta → Meu nome), ou o e-mail de quem ainda não
+// definiu, para mostrar "por Fulano" nos lançamentos. A lista de logins só é
+// acessível com a chave secreta; sem ela os lançamentos aparecem sem autor.
+export async function buscarNomesUsuarios(): Promise<Record<string, string>> {
+  if (!chaveSecretaConfigurada()) return {};
+  try {
+    const { data } = await createAdminClient().auth.admin.listUsers({ perPage: 200 });
+    const nomes: Record<string, string> = {};
+    for (const u of data?.users ?? []) {
+      const nome = typeof u.user_metadata?.nome === "string" ? u.user_metadata.nome.trim() : "";
+      nomes[u.id] = nome ? nome.split(" ")[0] : (u.email ?? "").split("@")[0] || "outro usuário";
+    }
+    return nomes;
+  } catch {
+    return {};
+  }
 }

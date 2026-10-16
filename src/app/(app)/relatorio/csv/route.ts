@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { dataBR, hojeISO } from "@/lib/alugueis";
-import { buscarDespesas, buscarImoveis, buscarPagamentos } from "@/lib/dados";
+import { buscarDespesas, buscarImoveis, buscarNomesUsuarios, buscarPagamentos } from "@/lib/dados";
 
 // Planilha do ano com um recebimento ou uma despesa por linha. Usa ";" e
 // vírgula decimal, que é o que o Excel em português abre direto em colunas.
@@ -18,10 +18,11 @@ export async function GET(request: NextRequest) {
     : Number(hojeISO().slice(0, 4));
   const periodo = { de: `${ano}-01-01`, ate: `${ano}-12-31` };
 
-  const [imoveis, pagamentos, despesas] = await Promise.all([
+  const [imoveis, pagamentos, despesas, autores] = await Promise.all([
     buscarImoveis(supabase),
     buscarPagamentos(supabase, periodo),
     buscarDespesas(supabase, periodo),
+    buscarNomesUsuarios(),
   ]);
   const porId = new Map(imoveis.map((i) => [i.id, i]));
 
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
   const num = (n: number) => n.toFixed(2).replace(".", ",");
 
   const linhas = [
-    ["Tipo", "Imóvel", "Inquilino", "Mês de referência", "Data", "Categoria", "Descrição", "Valor"].map(q).join(";"),
+    ["Tipo", "Imóvel", "Inquilino", "Mês de referência", "Data", "Categoria", "Descrição", "Valor", "Lançado por"].map(q).join(";"),
   ];
   for (const p of pagamentos) {
     const imovel = porId.get(p.imovel_id);
@@ -43,6 +44,7 @@ export async function GET(request: NextRequest) {
         q("Aluguel"),
         q(p.observacao),
         num(Number(p.valor)),
+        q(p.owner_id ? autores[p.owner_id] : ""),
       ].join(";"),
     );
   }
@@ -57,6 +59,7 @@ export async function GET(request: NextRequest) {
         q(d.categoria),
         q(d.descricao),
         num(-Number(d.valor)),
+        q(d.owner_id ? autores[d.owner_id] : ""),
       ].join(";"),
     );
   }
