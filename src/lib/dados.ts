@@ -69,3 +69,19 @@ export async function buscarNomesUsuarios(): Promise<Record<string, string>> {
     return {};
   }
 }
+
+export type Socio = { id: string; nome: string; email: string };
+
+// Sócios = todas as pessoas com acesso ao sistema (tela Usuários), em ordem
+// alfabética. null quando a chave secreta não está configurada.
+export async function buscarSocios(): Promise<Socio[] | null> {
+  if (!chaveSecretaConfigurada()) return null;
+  const { data, error } = await createAdminClient().auth.admin.listUsers({ perPage: 200 });
+  if (error) throw new Error(`Erro ao carregar sócios: ${error.message}`);
+  return (data?.users ?? [])
+    .map((u) => {
+      const nome = typeof u.user_metadata?.nome === "string" ? u.user_metadata.nome.trim() : "";
+      return { id: u.id, nome: nome || (u.email ?? "").split("@")[0], email: u.email ?? "" };
+    })
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+}

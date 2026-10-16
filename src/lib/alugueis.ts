@@ -222,3 +222,17 @@ export function comMensagem(caminho: string, chave: "ok" | "erro", texto: string
   url.searchParams.set(chave, texto);
   return url.pathname + url.search;
 }
+
+// Divide um valor em partes iguais sem perder centavos: as primeiras partes
+// levam o centavo que sobra (ex.: R$ 100,00 / 3 = 33,34 + 33,33 + 33,33).
+// Funciona também para valor negativo (prejuízo dividido entre os sócios).
+export function dividirIgual(total: number, partes: number): number[] {
+  if (partes <= 0) return [];
+  const centavos = Math.round(total * 100);
+  const base = Math.trunc(centavos / partes);
+  const resto = centavos - base * partes;
+  return Array.from({ length: partes }, (_, i) => {
+    const extra = i < Math.abs(resto) ? Math.sign(resto) : 0;
+    return (base + extra) / 100;
+  });
+}

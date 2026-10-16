@@ -16,6 +16,8 @@ Feito com Next.js + Supabase (banco e login), hospedado na Vercel.
   contrato e dados do inquilino. Imóvel desocupado para de gerar cobrança e
   mantém o histórico.
 - **Despesas**: lançamento por imóvel e por mês.
+- **Lucro dos sócios**: lucro do mês e do ano (recebido − despesas) dividido
+  em partes iguais entre todas as pessoas com acesso, com a parte de cada um.
 - **Relatório**: os 12 meses do ano, o resultado de cada imóvel e o botão
   **Baixar planilha (CSV)**.
 - **Usuários**: dar acesso a uma pessoa (com senha provisória e mensagem
