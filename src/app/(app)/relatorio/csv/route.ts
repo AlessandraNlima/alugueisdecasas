@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { dataBR, hojeISO } from "@/lib/alugueis";
+import { ROTULO_DESPESA_GERAL, dataBR, hojeISO } from "@/lib/alugueis";
 import { buscarDespesas, buscarImoveis, buscarNomesUsuarios, buscarPagamentos } from "@/lib/dados";
 
 // Planilha do ano com um recebimento ou uma despesa por linha. Usa ";" e
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     linhas.push(
       [
         q("Despesa"),
-        q(porId.get(d.imovel_id)?.apelido),
+        q(d.imovel_id ? porId.get(d.imovel_id)?.apelido : ROTULO_DESPESA_GERAL),
         q(""),
         q(d.data.slice(0, 7)),
         q(dataBR(d.data)),

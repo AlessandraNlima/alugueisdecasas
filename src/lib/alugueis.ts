@@ -30,7 +30,7 @@ export type Pagamento = {
 
 export type Despesa = {
   id: string;
-  imovel_id: string;
+  imovel_id: string | null; // null = despesa geral, sem imóvel
   data: string;
   categoria: string;
   descricao: string | null;
@@ -236,3 +236,5 @@ export function dividirIgual(total: number, partes: number): number[] {
     return (base + extra) / 100;
   });
 }
+
+export const ROTULO_DESPESA_GERAL = "Geral (sem imóvel)";

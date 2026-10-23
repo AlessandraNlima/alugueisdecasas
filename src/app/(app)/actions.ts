@@ -113,12 +113,12 @@ export async function desfazerPagamento(formData: FormData) {
 export async function lancarDespesa(formData: FormData) {
   const { supabase } = await exigirUsuario();
   const voltar = caminhoSeguro(formData.get("voltar"), "/despesas");
+  // Vazio = despesa geral da sociedade, sem imóvel.
   const imovelId = texto(formData, "imovel_id");
   const data = texto(formData, "data");
   const valor = lerValor(formData.get("valor"));
   const categoria = texto(formData, "categoria");
 
-  if (!imovelId) falhar(voltar, "Escolha o imóvel.");
   if (!data || !DATA_RE.test(data)) falhar(voltar, "Informe a data da despesa.");
   if (!valor) falhar(voltar, "Informe o valor, por exemplo 250,00.");
   if (!categoria || !CATEGORIAS_DESPESA.includes(categoria)) falhar(voltar, "Escolha o tipo da despesa.");
@@ -130,7 +130,15 @@ export async function lancarDespesa(formData: FormData) {
     categoria,
     descricao: texto(formData, "descricao"),
   });
-  if (error) falhar(voltar, `Não foi possível lançar: ${error.message}`);
+  if (error) {
+    // 23502 = campo obrigatório vazio: o banco ainda não aceita despesa geral.
+    falhar(
+      voltar,
+      error.code === "23502" && !imovelId
+        ? "O banco ainda não aceita despesa geral. Rode no Supabase (SQL Editor) o arquivo supabase/migrations/20261023120000_despesa_geral.sql."
+        : `Não foi possível lançar: ${error.message}`,
+    );
+  }
   // Vai para o mês da despesa, para ela aparecer na lista logo em seguida.
   concluir(`/despesas?mes=${data.slice(0, 7)}`, "Despesa lançada.");
 }

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui";
 import {
   CATEGORIAS_DESPESA,
+  ROTULO_DESPESA_GERAL,
   brl,
   dataBR,
   hojeISO,
@@ -61,61 +62,57 @@ export default async function DespesasPage({ searchParams }: PageProps<"/despesa
       <Mensagem ok={param(sp.ok)} erro={param(sp.erro)} />
 
       <Painel titulo="Lançar despesa">
-        {imoveis.length === 0 ? (
-          <Vazio
-            titulo="Nenhum imóvel cadastrado"
-            acao={
-              <Link href="/imoveis#novo" className={botaoPrincipal}>
-                Cadastrar imóvel
-              </Link>
-            }
-          >
-            Cadastre um imóvel antes de lançar despesas.
-          </Vazio>
-        ) : (
-          <form action={lancarDespesa} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <input type="hidden" name="voltar" value={voltar} />
-            <label className={rotulo}>
-              Imóvel
-              <select name="imovel_id" required className={campo}>
-                {imoveis.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.apelido}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={rotulo}>
-              Tipo
-              <select name="categoria" required className={campo}>
-                {CATEGORIAS_DESPESA.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </label>
-            <label className={rotulo}>
-              Data
-              <input
-                name="data"
-                type="date"
-                required
-                defaultValue={mes === hoje.slice(0, 7) ? hoje : `${mes}-01`}
-                className={campo}
-              />
-            </label>
-            <label className={rotulo}>
-              Valor (R$)
-              <input name="valor" required inputMode="decimal" placeholder="250,00" className={campo} />
-            </label>
-            <label className={`${rotulo} sm:col-span-2 lg:col-span-3`}>
-              Descrição
-              <input name="descricao" placeholder="Ex.: troca do chuveiro" className={campo} />
-            </label>
-            <div className="flex items-end">
-              <SubmitButton className={`${botaoPrincipal} w-full`}>Lançar despesa</SubmitButton>
-            </div>
-          </form>
+        {imoveis.length === 0 && (
+          <p className="rounded-xl bg-blue-50/70 px-4 py-3 text-sm text-slate-700">
+            Ainda não há imóveis: por enquanto as despesas entram como <b>Geral (sem imóvel)</b>.{" "}
+            <Link href="/imoveis#novo" className="font-semibold text-blue-700 hover:underline">
+              Cadastrar imóvel
+            </Link>
+          </p>
         )}
+        <form action={lancarDespesa} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <input type="hidden" name="voltar" value={voltar} />
+          <label className={rotulo}>
+            Imóvel
+            <select name="imovel_id" className={campo}>
+              {imoveis.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.apelido}
+                </option>
+              ))}
+              <option value="">{ROTULO_DESPESA_GERAL}</option>
+            </select>
+          </label>
+          <label className={rotulo}>
+            Tipo
+            <select name="categoria" required className={campo}>
+              {CATEGORIAS_DESPESA.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+          <label className={rotulo}>
+            Data
+            <input
+              name="data"
+              type="date"
+              required
+              defaultValue={mes === hoje.slice(0, 7) ? hoje : `${mes}-01`}
+              className={campo}
+            />
+          </label>
+          <label className={rotulo}>
+            Valor (R$)
+            <input name="valor" required inputMode="decimal" placeholder="250,00" className={campo} />
+          </label>
+          <label className={`${rotulo} sm:col-span-2 lg:col-span-3`}>
+            Descrição
+            <input name="descricao" placeholder="Ex.: troca do chuveiro" className={campo} />
+          </label>
+          <div className="flex items-end">
+            <SubmitButton className={`${botaoPrincipal} w-full`}>Lançar despesa</SubmitButton>
+          </div>
+        </form>
       </Painel>
 
       <Painel
@@ -158,7 +155,7 @@ export default async function DespesasPage({ searchParams }: PageProps<"/despesa
                 {despesas.map((d) => (
                   <tr key={d.id}>
                     <td className={`${td} whitespace-nowrap tabular-nums`}>{dataBR(d.data)}</td>
-                    <td className={`${td} font-medium text-slate-900`}>{nomes.get(d.imovel_id) ?? "—"}</td>
+                    <td className={`${td} font-medium text-slate-900`}>{d.imovel_id ? (nomes.get(d.imovel_id) ?? "—") : ROTULO_DESPESA_GERAL}</td>
                     <td className={td}>
                       <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
                         {d.categoria}

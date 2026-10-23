@@ -13,7 +13,7 @@ import {
   th,
   thead,
 } from "@/components/ui";
-import { brl, hojeISO, indexarPagamentos, nomeCurtoDoMes, resumoDoMes } from "@/lib/alugueis";
+import { ROTULO_DESPESA_GERAL, brl, hojeISO, indexarPagamentos, nomeCurtoDoMes, resumoDoMes } from "@/lib/alugueis";
 import { buscarDespesas, buscarImoveis, buscarPagamentos, exigirUsuario } from "@/lib/dados";
 
 function param(v: string | string[] | undefined) {
@@ -45,6 +45,8 @@ export default async function RelatorioPage({ searchParams }: PageProps<"/relato
     const despesas = despesasAno.filter((d) => d.imovel_id === imovel.id).reduce((s, d) => s + Number(d.valor), 0);
     return { imovel, recebido, despesas, liquido: recebido - despesas };
   });
+  // Despesas gerais (sem imóvel) aparecem numa linha própria no fim.
+  const despesasGerais = despesasAno.filter((d) => !d.imovel_id).reduce((s, d) => s + Number(d.valor), 0);
   const semMovimento = soma("previsto") === 0 && soma("recebido") === 0 && soma("despesas") === 0;
 
   const seta = "grid h-9 w-9 place-items-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900";
@@ -151,7 +153,7 @@ export default async function RelatorioPage({ searchParams }: PageProps<"/relato
       </Painel>
 
       <Painel titulo={`Por imóvel em ${ano}`}>
-        {porImovel.length === 0 ? (
+        {porImovel.length === 0 && despesasGerais === 0 ? (
           <Vazio titulo="Nenhum imóvel cadastrado">
             <Link href="/imoveis#novo" className="font-semibold text-blue-700 hover:underline">
               Cadastre um imóvel
@@ -180,6 +182,14 @@ export default async function RelatorioPage({ searchParams }: PageProps<"/relato
                     </td>
                   </tr>
                 ))}
+                {despesasGerais > 0 && (
+                  <tr>
+                    <td className={`${td} font-medium text-slate-600`}>{ROTULO_DESPESA_GERAL}</td>
+                    <td className={`${tdValor} text-slate-400`}>{brl(0)}</td>
+                    <td className={`${tdValor} text-red-700`}>{brl(despesasGerais)}</td>
+                    <td className={`${tdValor} font-semibold text-red-700`}>{brl(-despesasGerais)}</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

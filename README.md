@@ -15,7 +15,8 @@ Feito com Next.js + Supabase (banco e login), hospedado na Vercel.
 - **Imóveis**: cadastro com endereço, valor, dia do vencimento, início do
   contrato e dados do inquilino. Imóvel desocupado para de gerar cobrança e
   mantém o histórico.
-- **Despesas**: lançamento por imóvel e por mês.
+- **Despesas**: lançamento por imóvel e por mês, ou **Geral (sem imóvel)** para
+  despesas da sociedade (contador, taxas).
 - **Lucro dos sócios**: lucro do mês e do ano (recebido − despesas) dividido
   em partes iguais entre todas as pessoas com acesso, com a parte de cada um.
 - **Relatório**: os 12 meses do ano, o resultado de cada imóvel e o botão
@@ -39,6 +40,8 @@ Todas as pessoas cadastradas no Supabase veem e administram os mesmos dados.
    [`supabase/migrations/20261016120000_alugueis.sql`](supabase/migrations/20261016120000_alugueis.sql)
    e clique em **Run**. Depois, numa nova query, faça o mesmo com
    [`supabase/migrations/20261016130000_acesso_compartilhado.sql`](supabase/migrations/20261016130000_acesso_compartilhado.sql).
+   Por último, rode também
+   [`supabase/migrations/20261023120000_despesa_geral.sql`](supabase/migrations/20261023120000_despesa_geral.sql).
    Isso cria as tabelas `imoveis`, `pagamentos` e `despesas`, acessíveis só a
    quem tem login.
 3. Em **Authentication → Users → Add user → Create new user**, crie o seu
