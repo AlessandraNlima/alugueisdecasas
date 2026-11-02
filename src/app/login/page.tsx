@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { House } from "lucide-react";
 import { SubmitButton } from "@/components/submit-button";
 import { botaoPrincipal, campo, rotulo, sombra } from "@/components/ui";
@@ -43,11 +44,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
               Entrar
             </SubmitButton>
           </form>
+          <Link href="/esqueci-senha" className="mt-4 block text-center text-sm font-semibold text-blue-700 hover:underline">
+            Esqueci minha senha
+          </Link>
         </div>
-
-        <p className="mt-6 text-center text-xs text-slate-500">
-          Esqueceu a senha? Peça para quem administra o sistema gerar uma nova em <b>Usuários</b>.
-        </p>
       </div>
     </div>
   );

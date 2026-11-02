@@ -1,9 +1,11 @@
 import "server-only";
-import nodemailer from "nodemailer";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { hojeISO, dataBR } from "@/lib/alugueis";
 import { SISTEMA_BACKUP, VERSAO_BACKUP, type ArquivoBackup } from "@/lib/backup";
 import { buscarSocios } from "@/lib/dados";
+import { emailConfigurado, enviarEmail } from "@/lib/email";
+
+export { emailConfigurado };
 
 // Monta o backup lendo as tabelas com o cliente recebido: o do usuário logado
 // (botão Baixar) ou o administrativo (envio automático, que roda sem login).
@@ -36,12 +38,6 @@ export function nomeArquivoBackup() {
   return `backup-alugueis-${hojeISO()}.json`;
 }
 
-// Envio por Gmail (gratuito): precisa de uma "senha de app" da conta Google,
-// não da senha normal. Sem as duas variáveis, o envio fica desligado.
-export function emailConfigurado(): boolean {
-  return Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
-}
-
 // Destinatários: BACKUP_EMAIL_PARA (separados por vírgula) ou, sem ela,
 // todos os sócios com acesso ao sistema.
 export async function destinatariosBackup(): Promise<string[]> {
@@ -55,9 +51,7 @@ export async function destinatariosBackup(): Promise<string[]> {
 }
 
 export async function enviarBackupPorEmail(cliente: SupabaseClient, geradoPor: string, motivo: string) {
-  const usuario = process.env.GMAIL_USER;
-  const senha = process.env.GMAIL_APP_PASSWORD;
-  if (!usuario || !senha) {
+  if (!emailConfigurado()) {
     throw new Error("Envio de e-mail não configurado (faltam GMAIL_USER e GMAIL_APP_PASSWORD na Vercel).");
   }
   const para = await destinatariosBackup();
@@ -78,14 +72,7 @@ export async function enviarBackupPorEmail(cliente: SupabaseClient, geradoPor: s
     "O anexo tem CPF e telefone dos inquilinos: não encaminhe para fora da sociedade.",
   ].join("\n");
 
-  const transporte = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: { user: usuario, pass: senha.replace(/\s+/g, "") },
-  });
-  await transporte.sendMail({
-    from: `Sistema de Aluguéis <${usuario}>`,
+  await enviarEmail({
     to: para.join(", "),
     subject: `Backup do sistema de aluguéis – ${hoje}`,
     text: texto,

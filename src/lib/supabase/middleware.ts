@@ -3,7 +3,8 @@ import { SUPABASE_KEY, SUPABASE_URL } from "./config";
 import { NextResponse, type NextRequest } from "next/server";
 
 // /api/cron: chamado pela Vercel Cron, sem login; a rota confere o CRON_SECRET.
-const PUBLIC_PATHS = ["/login", "/api/cron"];
+// /esqueci-senha e /auth/confirm: recuperar a senha sem estar logado.
+const PUBLIC_PATHS = ["/login", "/api/cron", "/esqueci-senha", "/auth/confirm"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
