@@ -86,6 +86,13 @@ manda o arquivo de backup por e-mail para todos os sócios. Variáveis na Vercel
 Depois de cadastrar, faça Redeploy e teste em **Backup → Enviar backup por
 e-mail agora**.
 
+## Banco sempre ativo (gratuito)
+
+O Supabase gratuito pausa o projeto depois de 7 dias sem uso. Uma rotina diária
+(`/api/cron/manter-ativo`, 9h de Brasília, ver `vercel.json`) faz uma consulta
+leve ao banco para isso não acontecer. Usa o mesmo `CRON_SECRET` do backup por
+e-mail; sem essa variável na Vercel a rotina não roda.
+
 ## Dar acesso a outra pessoa
 
 Pela tela **Usuários** do sistema: preencha nome, e-mail e senha provisória,
