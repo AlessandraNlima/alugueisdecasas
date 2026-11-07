@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { chaveSecretaConfigurada, createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { Despesa, Imovel, Pagamento } from "@/lib/alugueis";
+import type { Despesa, Imovel, Pagamento, Receita } from "@/lib/alugueis";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
@@ -50,6 +50,34 @@ export async function buscarDespesas(
     .order("data", { ascending: false });
   if (error) throw new Error(`Erro ao carregar despesas: ${error.message}`);
   return (data ?? []) as Despesa[];
+}
+
+// Enquanto o SQL de receitas não foi rodado no Supabase, a tabela não existe:
+// devolve lista vazia em vez de derrubar as telas.
+export async function buscarReceitas(
+  supabase: Supabase,
+  filtro: { de: string; ate: string },
+): Promise<Receita[]> {
+  const { data, error } = await supabase
+    .from("receitas")
+    .select("id, imovel_id, data, categoria, descricao, valor, owner_id, criado_em")
+    .gte("data", filtro.de)
+    .lte("data", filtro.ate)
+    .order("data", { ascending: false });
+  if (error) {
+    if (tabelaReceitasAusente(error)) return [];
+    throw new Error(`Erro ao carregar receitas: ${error.message}`);
+  }
+  return (data ?? []) as Receita[];
+}
+
+export function tabelaReceitasAusente(error: { code?: string; message?: string }) {
+  const msg = error.message ?? "";
+  return (
+    error.code === "42P01" ||
+    error.code === "PGRST205" ||
+    (/receitas/.test(msg) && /does not exist|schema cache/.test(msg))
+  );
 }
 
 // Nome de cada sócio (Minha conta → Meu nome), ou o e-mail de quem ainda não

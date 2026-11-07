@@ -23,7 +23,14 @@ import {
   nomeDoMes,
   resumoDoMes,
 } from "@/lib/alugueis";
-import { buscarDespesas, buscarImoveis, buscarPagamentos, buscarSocios, exigirUsuario } from "@/lib/dados";
+import {
+  buscarDespesas,
+  buscarImoveis,
+  buscarPagamentos,
+  buscarReceitas,
+  buscarSocios,
+  exigirUsuario,
+} from "@/lib/dados";
 
 function param(v: string | string[] | undefined) {
   return typeof v === "string" ? v : undefined;
@@ -41,11 +48,12 @@ export default async function LucroPage({ searchParams }: PageProps<"/lucro">) {
   const periodo = { de: `${ano}-01-01`, ate: `${ano}-12-31` };
 
   const { supabase, user } = await exigirUsuario();
-  const [imoveis, pagamentosAno, despesasAno, socios] = await Promise.all([
+  const [imoveis, pagamentosAno, despesasAno, socios, receitasAno] = await Promise.all([
     buscarImoveis(supabase),
     buscarPagamentos(supabase, periodo),
     buscarDespesas(supabase, periodo),
     buscarSocios(),
+    buscarReceitas(supabase, periodo),
   ]);
 
   const cabecalho = (
@@ -78,8 +86,9 @@ export default async function LucroPage({ searchParams }: PageProps<"/lucro">) {
   const pagamentos = indexarPagamentos(pagamentosAno);
   const meses = Array.from({ length: 12 }, (_, i) => `${ano}-${String(i + 1).padStart(2, "0")}`);
   const linhas = meses.map((ym) => {
-    const r = resumoDoMes(ym, imoveis, pagamentos, despesasAno, hoje);
-    return { ym, recebido: r.recebido, despesas: r.despesas, lucro: r.liquido, partes: dividirIgual(r.liquido, socios.length) };
+    const r = resumoDoMes(ym, imoveis, pagamentos, despesasAno, hoje, receitasAno);
+    // "Recebido" aqui é tudo o que entrou: aluguéis + outras receitas.
+    return { ym, recebido: r.entradas, despesas: r.despesas, lucro: r.liquido, partes: dividirIgual(r.liquido, socios.length) };
   });
   const doMes = linhas.find((l) => l.ym === mes)!;
   const totalAno = {
@@ -119,7 +128,7 @@ export default async function LucroPage({ searchParams }: PageProps<"/lucro">) {
         subtitulo={
           doMes.lucro < 0
             ? "As despesas passaram do que foi recebido: o valor negativo é o quanto cada sócio cobre."
-            : "Valores recebidos no mês menos as despesas lançadas no mês. Aluguel em aberto só entra quando é pago."
+            : "Aluguéis pagos e outras receitas do mês, menos as despesas lançadas no mês. Aluguel em aberto só entra quando é pago."
         }
       >
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">

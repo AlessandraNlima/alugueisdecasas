@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { lerArquivoBackup, somenteColunas, type Linha } from "@/lib/backup";
-import { buscarSocios, exigirUsuario } from "@/lib/dados";
+import { buscarSocios, exigirUsuario, tabelaReceitasAusente } from "@/lib/dados";
 import { enviarBackupPorEmail } from "@/lib/backup-servidor";
 
 const LIMITE_BYTES = 4 * 1024 * 1024;
@@ -41,6 +41,7 @@ export async function restaurarBackup(formData: FormData) {
   const imoveis = backup.imoveis.map((l) => autor(somenteColunas("imoveis", l)));
   const pagamentos = backup.pagamentos.map((l) => autor(somenteColunas("pagamentos", l)));
   const despesas = backup.despesas.map((l) => autor(somenteColunas("despesas", l)));
+  const receitas = (backup.receitas ?? []).map((l) => autor(somenteColunas("receitas", l)));
 
   // Ordem importa: pagamentos e despesas dependem dos imóveis.
   if (imoveis.length) {
@@ -55,12 +56,23 @@ export async function restaurarBackup(formData: FormData) {
     const { error } = await supabase.from("despesas").upsert(despesas, { onConflict: "id" });
     if (error) voltar("erro", `Imóveis e pagamentos restaurados, mas as despesas falharam: ${error.message}`);
   }
+  if (receitas.length) {
+    const { error } = await supabase.from("receitas").upsert(receitas, { onConflict: "id" });
+    if (error) {
+      voltar(
+        "erro",
+        tabelaReceitasAusente(error)
+          ? "Imóveis, pagamentos e despesas restaurados. Para restaurar as outras receitas, rode antes no Supabase o arquivo supabase/migrations/20261107120000_receitas.sql e restaure de novo."
+          : `Imóveis, pagamentos e despesas restaurados, mas as receitas falharam: ${error.message}`,
+      );
+    }
+  }
 
   revalidatePath("/", "layout");
   const data = new Date(backup.gerado_em).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
   voltar(
     "ok",
-    `Backup de ${data} restaurado: ${imoveis.length} imóveis, ${pagamentos.length} pagamentos e ${despesas.length} despesas.`,
+    `Backup de ${data} restaurado: ${imoveis.length} imóveis, ${pagamentos.length} pagamentos, ${despesas.length} despesas e ${receitas.length} outras receitas.`,
   );
 }
 

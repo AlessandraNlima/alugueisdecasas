@@ -2,7 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { hojeISO, dataBR } from "@/lib/alugueis";
 import { SISTEMA_BACKUP, VERSAO_BACKUP, type ArquivoBackup } from "@/lib/backup";
-import { buscarSocios } from "@/lib/dados";
+import { buscarSocios, tabelaReceitasAusente } from "@/lib/dados";
 import { emailConfigurado, enviarEmail } from "@/lib/email";
 
 export { emailConfigurado };
@@ -10,15 +10,20 @@ export { emailConfigurado };
 // Monta o backup lendo as tabelas com o cliente recebido: o do usuário logado
 // (botão Baixar) ou o administrativo (envio automático, que roda sem login).
 export async function gerarBackup(cliente: SupabaseClient, geradoPor: string): Promise<ArquivoBackup> {
-  const tudo = async (tabela: "imoveis" | "pagamentos" | "despesas") => {
+  const tudo = async (tabela: "imoveis" | "pagamentos" | "despesas" | "receitas") => {
     const { data, error } = await cliente.from(tabela).select("*").order("criado_em").limit(100000);
-    if (error) throw new Error(`Erro ao ler ${tabela}: ${error.message}`);
+    if (error) {
+      // Sem o SQL de receitas rodado, a tabela não existe: backup sai sem ela.
+      if (tabela === "receitas" && tabelaReceitasAusente(error)) return [];
+      throw new Error(`Erro ao ler ${tabela}: ${error.message}`);
+    }
     return data ?? [];
   };
-  const [imoveis, pagamentos, despesas, socios] = await Promise.all([
+  const [imoveis, pagamentos, despesas, receitas, socios] = await Promise.all([
     tudo("imoveis"),
     tudo("pagamentos"),
     tudo("despesas"),
+    tudo("receitas"),
     buscarSocios().catch(() => null),
   ]);
   return {
@@ -29,6 +34,7 @@ export async function gerarBackup(cliente: SupabaseClient, geradoPor: string): P
     imoveis,
     pagamentos,
     despesas,
+    receitas,
     // Só para consulta: logins não são recriados na restauração.
     socios: socios ?? undefined,
   };
@@ -65,6 +71,7 @@ export async function enviarBackupPorEmail(cliente: SupabaseClient, geradoPor: s
     `Imóveis: ${backup.imoveis.length}`,
     `Pagamentos: ${backup.pagamentos.length}`,
     `Despesas: ${backup.despesas.length}`,
+    `Outras receitas: ${backup.receitas?.length ?? 0}`,
     "",
     "Guarde o arquivo anexo na pasta de backups dos sócios no Google Drive.",
     "Para restaurar: no sistema, menu Backup → Restaurar backup → escolha este arquivo.",

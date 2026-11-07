@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ROTULO_DESPESA_GERAL, dataBR, hojeISO } from "@/lib/alugueis";
-import { buscarDespesas, buscarImoveis, buscarNomesUsuarios, buscarPagamentos } from "@/lib/dados";
+import { buscarDespesas, buscarImoveis, buscarNomesUsuarios, buscarPagamentos, buscarReceitas } from "@/lib/dados";
 
 // Planilha do ano com um recebimento ou uma despesa por linha. Usa ";" e
 // vírgula decimal, que é o que o Excel em português abre direto em colunas.
@@ -18,11 +18,12 @@ export async function GET(request: NextRequest) {
     : Number(hojeISO().slice(0, 4));
   const periodo = { de: `${ano}-01-01`, ate: `${ano}-12-31` };
 
-  const [imoveis, pagamentos, despesas, autores] = await Promise.all([
+  const [imoveis, pagamentos, despesas, autores, receitas] = await Promise.all([
     buscarImoveis(supabase),
     buscarPagamentos(supabase, periodo),
     buscarDespesas(supabase, periodo),
     buscarNomesUsuarios(),
+    buscarReceitas(supabase, periodo),
   ]);
   const porId = new Map(imoveis.map((i) => [i.id, i]));
 
@@ -45,6 +46,21 @@ export async function GET(request: NextRequest) {
         q(p.observacao),
         num(Number(p.valor)),
         q(p.owner_id ? autores[p.owner_id] : ""),
+      ].join(";"),
+    );
+  }
+  for (const r of [...receitas].reverse()) {
+    linhas.push(
+      [
+        q("Receita"),
+        q(r.imovel_id ? porId.get(r.imovel_id)?.apelido : ROTULO_DESPESA_GERAL),
+        q(""),
+        q(r.data.slice(0, 7)),
+        q(dataBR(r.data)),
+        q(r.categoria),
+        q(r.descricao),
+        num(Number(r.valor)),
+        q(r.owner_id ? autores[r.owner_id] : ""),
       ].join(";"),
     );
   }

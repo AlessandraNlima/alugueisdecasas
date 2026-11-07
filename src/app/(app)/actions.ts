@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { exigirUsuario } from "@/lib/dados";
+import { exigirUsuario, tabelaReceitasAusente } from "@/lib/dados";
 import {
   CATEGORIAS_DESPESA,
+  CATEGORIAS_RECEITA,
   caminhoSeguro,
   comMensagem,
   lerValor,
@@ -151,4 +152,45 @@ export async function excluirDespesa(formData: FormData) {
   const { error } = await supabase.from("despesas").delete().eq("id", id);
   if (error) falhar(voltar, `Não foi possível excluir: ${error.message}`);
   concluir(voltar, "Despesa excluída.");
+}
+
+export async function lancarReceita(formData: FormData) {
+  const { supabase } = await exigirUsuario();
+  const voltar = caminhoSeguro(formData.get("voltar"), "/receitas");
+  // Vazio = receita geral, sem imóvel.
+  const imovelId = texto(formData, "imovel_id");
+  const data = texto(formData, "data");
+  const valor = lerValor(formData.get("valor"));
+  const categoria = texto(formData, "categoria");
+
+  if (!data || !DATA_RE.test(data)) falhar(voltar, "Informe a data da receita.");
+  if (!valor) falhar(voltar, "Informe o valor, por exemplo 250,00.");
+  if (!categoria || !CATEGORIAS_RECEITA.includes(categoria)) falhar(voltar, "Escolha o tipo da receita.");
+
+  const { error } = await supabase.from("receitas").insert({
+    imovel_id: imovelId,
+    data,
+    valor,
+    categoria,
+    descricao: texto(formData, "descricao"),
+  });
+  if (error) {
+    falhar(
+      voltar,
+      tabelaReceitasAusente(error)
+        ? "O banco ainda não tem a tabela de receitas. Rode no Supabase (SQL Editor) o arquivo supabase/migrations/20261107120000_receitas.sql."
+        : `Não foi possível lançar: ${error.message}`,
+    );
+  }
+  concluir(`/receitas?mes=${data.slice(0, 7)}`, "Receita lançada.");
+}
+
+export async function excluirReceita(formData: FormData) {
+  const { supabase } = await exigirUsuario();
+  const voltar = caminhoSeguro(formData.get("voltar"), "/receitas");
+  const id = texto(formData, "id");
+  if (!id) falhar(voltar, "Receita não encontrada.");
+  const { error } = await supabase.from("receitas").delete().eq("id", id);
+  if (error) falhar(voltar, `Não foi possível excluir: ${error.message}`);
+  concluir(voltar, "Receita excluída.");
 }

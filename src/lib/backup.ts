@@ -26,6 +26,7 @@ export const COLUNAS = {
   // Sem "id": o pagamento é identificado por imóvel + mês (um por mês).
   pagamentos: ["owner_id", "imovel_id", "competencia", "valor", "data_pagamento", "observacao", "criado_em"],
   despesas: ["id", "owner_id", "imovel_id", "data", "categoria", "descricao", "valor", "criado_em"],
+  receitas: ["id", "owner_id", "imovel_id", "data", "categoria", "descricao", "valor", "criado_em"],
 } as const;
 
 export type Tabela = keyof typeof COLUNAS;
@@ -39,6 +40,8 @@ export type ArquivoBackup = {
   imoveis: Linha[];
   pagamentos: Linha[];
   despesas: Linha[];
+  // Backups antigos (antes das outras receitas) não têm esta lista.
+  receitas?: Linha[];
   socios?: { id: string; nome: string; email: string }[];
 };
 
@@ -60,6 +63,12 @@ export function lerArquivoBackup(texto: string): ArquivoBackup {
     if (!Array.isArray(d[t]) || d[t]!.some((l) => typeof l !== "object" || l === null)) {
       throw new Error(`O backup está incompleto (lista de ${t} inválida).`);
     }
+  }
+  if (
+    d.receitas !== undefined &&
+    (!Array.isArray(d.receitas) || d.receitas.some((l) => typeof l !== "object" || l === null))
+  ) {
+    throw new Error("O backup está incompleto (lista de receitas inválida).");
   }
   return d as ArquivoBackup;
 }

@@ -25,7 +25,14 @@ import {
   situacaoNoMes,
   vencimento,
 } from "@/lib/alugueis";
-import { buscarDespesas, buscarImoveis, buscarNomesUsuarios, buscarPagamentos, exigirUsuario } from "@/lib/dados";
+import {
+  buscarDespesas,
+  buscarImoveis,
+  buscarNomesUsuarios,
+  buscarPagamentos,
+  buscarReceitas,
+  exigirUsuario,
+} from "@/lib/dados";
 import { desfazerPagamento, registrarPagamento } from "./actions";
 import { TabelaAlugueis, type LinhaAluguel } from "./tabela-alugueis";
 
@@ -44,16 +51,17 @@ export default async function VisaoGeralPage({ searchParams }: PageProps<"/">) {
   const voltar = `/?mes=${mes}`;
 
   const { supabase } = await exigirUsuario();
-  const [imoveis, todosPagamentos, despesas, nomes] = await Promise.all([
+  const [imoveis, todosPagamentos, despesas, nomes, receitas] = await Promise.all([
     buscarImoveis(supabase),
     // Todos os pagamentos: as pendências olham todos os meses desde o
     // início de cada contrato, não só o mês aberto na tela.
     buscarPagamentos(supabase),
     buscarDespesas(supabase, { de: `${mes}-01`, ate: vencimento(mes, 31) }),
     buscarNomesUsuarios(),
+    buscarReceitas(supabase, { de: `${mes}-01`, ate: vencimento(mes, 31) }),
   ]);
   const pagamentos = indexarPagamentos(todosPagamentos);
-  const resumo = resumoDoMes(mes, imoveis, pagamentos, despesas, hoje);
+  const resumo = resumoDoMes(mes, imoveis, pagamentos, despesas, hoje, receitas);
   const atrasos = listarAtrasos(imoveis, pagamentos, hoje);
   const totalAtrasado = atrasos.reduce((s, a) => s + Number(a.imovel.valor_aluguel), 0);
 
@@ -119,9 +127,15 @@ export default async function VisaoGeralPage({ searchParams }: PageProps<"/">) {
         />
         <Cartao
           titulo="Recebido"
-          valor={brl(resumo.recebido)}
+          valor={brl(resumo.entradas)}
           detalhe={
-            pagos === 0 ? "Nenhum recebimento" : resumo.falta > 0 ? `Falta ${brl(resumo.falta)}` : "Tudo recebido"
+            resumo.outras > 0
+              ? `Aluguéis ${brl(resumo.recebido)} + outras ${brl(resumo.outras)}`
+              : pagos === 0
+                ? "Nenhum recebimento"
+                : resumo.falta > 0
+                  ? `Falta ${brl(resumo.falta)}`
+                  : "Tudo recebido"
           }
           icone={Download}
           tom="verde"

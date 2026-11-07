@@ -14,14 +14,15 @@ export default async function BackupPage({ searchParams }: PageProps<"/backup">)
   const sp = await searchParams;
   const { supabase } = await exigirUsuario();
 
-  const contar = async (tabela: "imoveis" | "pagamentos" | "despesas") => {
+  const contar = async (tabela: "imoveis" | "pagamentos" | "despesas" | "receitas") => {
     const { count } = await supabase.from(tabela).select("*", { count: "exact", head: true });
     return count ?? 0;
   };
-  const [imoveis, pagamentos, despesas, para] = await Promise.all([
+  const [imoveis, pagamentos, despesas, receitas, para] = await Promise.all([
     contar("imoveis"),
     contar("pagamentos"),
     contar("despesas"),
+    contar("receitas"),
     destinatariosBackup(),
   ]);
   const temEmail = emailConfigurado();
@@ -51,6 +52,9 @@ export default async function BackupPage({ searchParams }: PageProps<"/backup">)
               </li>
               <li>
                 <b className="tabular-nums">{despesas}</b> despesas
+              </li>
+              <li>
+                <b className="tabular-nums">{receitas}</b> outras receitas
               </li>
             </ul>
           </div>

@@ -176,7 +176,9 @@ export function listarAtrasos(
 
 export type ResumoMes = {
   previsto: number;
-  recebido: number;
+  recebido: number; // só aluguéis
+  outras: number; // outras receitas
+  entradas: number; // aluguéis + outras receitas
   despesas: number;
   liquido: number;
   falta: number;
@@ -188,6 +190,7 @@ export function resumoDoMes(
   pagamentos: Map<string, Pagamento>,
   despesas: Despesa[],
   hoje: string,
+  receitas: Receita[] = [],
 ): ResumoMes {
   let previsto = 0;
   let recebido = 0;
@@ -205,7 +208,11 @@ export function resumoDoMes(
   const totalDespesas = despesas
     .filter((d) => d.data.startsWith(ym))
     .reduce((soma, d) => soma + Number(d.valor), 0);
-  return { previsto, recebido, despesas: totalDespesas, liquido: recebido - totalDespesas, falta };
+  const outras = receitas
+    .filter((r) => r.data.startsWith(ym))
+    .reduce((soma, r) => soma + Number(r.valor), 0);
+  const entradas = recebido + outras;
+  return { previsto, recebido, outras, entradas, despesas: totalDespesas, liquido: entradas - totalDespesas, falta };
 }
 
 // Só aceita caminhos internos, para um ?voltar= vindo do formulário não virar
@@ -238,3 +245,25 @@ export function dividirIgual(total: number, partes: number): number[] {
 }
 
 export const ROTULO_DESPESA_GERAL = "Geral (sem imóvel)";
+
+// Outras receitas: entradas que não são aluguel.
+export type Receita = {
+  id: string;
+  imovel_id: string | null; // null = receita geral, sem imóvel
+  data: string;
+  categoria: string;
+  descricao: string | null;
+  valor: number;
+  owner_id?: string; // quem lançou
+  criado_em?: string;
+};
+
+export const CATEGORIAS_RECEITA = [
+  "Venda",
+  "Rendimento / juros",
+  "Reembolso",
+  "Multa ou juros de atraso",
+  "Serviço",
+  "Aporte de sócio",
+  "Outros",
+];

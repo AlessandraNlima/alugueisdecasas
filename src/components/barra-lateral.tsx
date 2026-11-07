@@ -11,6 +11,7 @@ import {
   DatabaseBackup,
   FileText,
   HandCoins,
+  PiggyBank,
   House,
   LogOut,
   Menu,
@@ -22,6 +23,7 @@ import { signOut } from "@/app/login/actions";
 const LINKS: { href: string; label: string; icone: LucideIcon }[] = [
   { href: "/", label: "Visão geral", icone: House },
   { href: "/imoveis", label: "Imóveis", icone: Building2 },
+  { href: "/receitas", label: "Receitas", icone: PiggyBank },
   { href: "/despesas", label: "Despesas", icone: FileText },
   { href: "/lucro", label: "Lucro dos sócios", icone: HandCoins },
   { href: "/relatorio", label: "Relatórios", icone: ChartColumn },
